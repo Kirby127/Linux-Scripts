@@ -1,0 +1,14 @@
+while true; do
+	sleep 5
+	ausearch -c mkdir | awk -F 'argc=2' '{print $2}' > newlog1
+	difff=$(diff mkdir_logs newlog1)
+	if [ -z "$difff" ]
+	then
+		echo "No-one"
+	else
+		ausearch -c mkdir | awk -F 'argc=2' '{print $2}' > mkdir_logs
+		echo "Someone has used mkdir"
+	fi
+done
+	
+	
