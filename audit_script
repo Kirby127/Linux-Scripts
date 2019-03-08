@@ -1,14 +1,16 @@
+#!/bin/bash
+
+touch /etc/calendar/mkdir_logs
 while true; do
 	sleep 5
-	ausearch -c mkdir | awk -F 'argc=2' '{print $2}' > newlog1
-	difff=$(diff mkdir_logs newlog1)
+	ausearch -c mkdir | awk -F 'argc=2' '{print $2}' > /etc/calendar/newlog1
+	difff=$(diff /etc/calendar/mkdir_logs /etc/calendar/newlog1)
 	if [ -z "$difff" ]
 	then
 		echo "No-one"
 	else
-		ausearch -c mkdir | awk -F 'argc=2' '{print $2}' > mkdir_logs
+		ausearch -c mkdir | awk -F 'argc=2' '{print $2}' > /etc/calendar/mkdir_logs
 		echo "Someone has used mkdir"
 	fi
 done
-	
-	
+
