@@ -1,27 +1,43 @@
 #!/bin/bash
 
-#Backup directory
+#Backup directorys
+sudo rm /etc/calendar/mkdir_logs
+sudo rm /etc/calendar/old_log
+
 sudo touch /etc/calendar/mkdir_logs
+sudo touch /etc/calendar/old_log
 
 #Setup for auditd
 sudo apt-get install auditd audispd-plugins
 auditd -w /bin/mkdir
 ausearch -c mkdir
+clear
+
+#Setup oldlog
+ausearch -c mkdir | egrep "a0=" | awk -F 'a0=' '{print "a0 =", $2}' | egrep -v "a0 = 5" | tail -n 1 >> /etc/calendar/old_log
+ausearch -c mkdir | egrep "uid=" | awk -F 'uid=' '{print "uid =", $2}' | egrep -v "uid = 0" | tail -n 1 >> /etc/calendar/old_log
+first_run=1
 
 #Excecution
 while true; do
 	date=$(date)
 	sleep 5
-	ausearch -c mkdir | awk -F 'argc=2' '{print $2}' > /etc/calendar/newlog1
-	difff=$(diff /etc/calendar/mkdir_logs /etc/calendar/newlog1)
+	difff=$(diff /etc/calendar/mkdir_logs /etc/calendar/old_log)
 	if [ -z "$difff" ]
 	then
 		echo "Logs Match"
 	else
 		#ausearch -c mkdir | awk -F 'a0=' '{print "a0= ", $2}' > /etc/calendar/mkdir_logs
-		ausearch -c mkdir | egrep "a0=" | awk -F 'a0=' '{print "a0 =", $2}' | egrep -v "a0 = 5" > /etc/calendar/mkdir_logs
-		ausearch -c mkdir | egrep "uid=" | awk -F 'uid=' '{print "uid =", $2}' | egrep -v "uid = 0" > /etc/calendar/mkdir_logs
+		ausearch -c mkdir | egrep "a0=" | awk -F 'a0=' '{print "a0 =", $2}' | egrep -v "a0 = 5" | tail -n 1 >> /etc/calendar/mkdir_logs
+		ausearch -c mkdir | egrep "uid=" | awk -F 'uid=' '{print "uid =", $2}' | egrep -v "uid = 0" | tail -n 1 >> /etc/calendar/mkdir_logs
 		echo "Someone has used mkdir at:" "$date"
+		#Update old_log if it is not the first run
+		if [ $first_run != 1 ]
+		then
+			ausearch -c mkdir | egrep "a0=" | awk -F 'a0=' '{print "a0 =", $2}' | egrep -v "a0 = 5" | tail -n 1 >> /etc/calendar/old_log
+                	ausearch -c mkdir | egrep "uid=" | awk -F 'uid=' '{print "uid =", $2}' | egrep -v "uid = 0" | tail -n 1 >> /etc/calendar/old_log
+			first_run=2
+		fi
 	fi
 done
 
