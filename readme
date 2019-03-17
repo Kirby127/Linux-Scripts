@@ -2,3 +2,6 @@
 House of Linux Scripts
 
 Storage of the dumb scripts that I write.
+
+Config
+apt-get install auditd audispd-plugins
