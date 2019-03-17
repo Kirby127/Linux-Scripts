@@ -1,6 +1,14 @@
 #!/bin/bash
 
-touch /etc/calendar/mkdir_logs
+#Backup directory
+sudo touch /etc/calendar/mkdir_logs
+
+#Setup for auditd
+sudo apt-get install auditd audispd-plugins
+auditd -w /bin/mkdir
+ausearch -c mkdir
+
+#Excecution
 while true; do
 	date=$(date)
 	sleep 5
@@ -10,7 +18,9 @@ while true; do
 	then
 		echo "Logs Match"
 	else
-		ausearch -c mkdir | awk -F 'argc=2' '{print $2}' > /etc/calendar/mkdir_logs
+		#ausearch -c mkdir | awk -F 'a0=' '{print "a0= ", $2}' > /etc/calendar/mkdir_logs
+		ausearch -c mkdir | egrep "a0=" | awk -F 'a0=' '{print "a0 =", $2}' | egrep -v "a0 = 5" > /etc/calendar/mkdir_logs
+		ausearch -c mkdir | egrep "uid=" | awk -F 'uid=' '{print "uid =", $2}' | egrep -v "uid = 0" > /etc/calendar/mkdir_logs
 		echo "Someone has used mkdir at:" "$date"
 	fi
 done
