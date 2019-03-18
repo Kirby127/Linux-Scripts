@@ -1,29 +1,48 @@
 #!/bin/bash
 
-#Backup directorys
+#Refresh Files
 sudo rm /etc/calendar/mkdir_logs
-sudo rm /etc/calendar/old_log
+sudo rm /etc/calendar/new_log
+sudo rm /etc/calendar/count
+sudo rm /etc/calendar/current
+sudo rm /etc/calendar/current1
 
 sudo touch /etc/calendar/mkdir_logs
-sudo touch /etc/calendar/old_log
+sudo touch /etc/calendar/new_log
+sudo touch /etc/calendar/count
+sudo touch /etc/calendar/current
+sudo touch /etc/calendar/current1
 
 #Setup for auditd
 sudo apt-get install auditd audispd-plugins
-auditd -w /bin/mkdir
+auditctl -w /bin/mkdir
 ausearch -c mkdir
 clear
 
-#Setup oldlog
-ausearch -c mkdir | egrep "a0=" | awk -F 'a0=' '{print "a0 =", $2}' | egrep -v "a0 = 5" | tail -n 1 >> /etc/calendar/old_log
-ausearch -c mkdir | egrep "uid=" | awk -F 'uid=' '{print "uid =", $2}' | egrep -v "uid = 0" | tail -n 1 >> /etc/calendar/old_log
-first_run=1
+#Setup newlog
+ausearch -c mkdir | egrep "a0=" | awk -F 'a0=' '{print "a0 =", $2}' | egrep -v "a0 = 5" | tail -n 1 >> /etc/calendar/new_log
+ausearch -c mkdir | egrep "uid=" | awk -F 'uid=' '{print "uid =", $2}' | egrep -v "uid = 0" | tail -n 1 >> /etc/calendar/new_log
 
 #Excecution
 while true; do
 	date=$(date)
 	sleep 5
-	difff=$(diff /etc/calendar/mkdir_logs /etc/calendar/old_log)
-	if [ -z "$difff" ]
+	#Will only update new_log if it is different from current logs, so new_log isnt updated every 5 seconds
+	cat /etc/calendar/new_log | tail -n 2 > /etc/calendar/current
+	ausearch -c mkdir | egrep "a0=" | awk -F 'a0=' '{print "a0 =", $2}' | egrep -v "a0 = 5" | tail -n 1 > /etc/calendar/current1
+	ausearch -c mkdir | egrep "uid=" | awk -F 'uid=' '{print "uid =", $2}' | egrep -v "uid = 0" | tail -n 1 >> /etc/calendar/current1
+	current_diff=$(diff /etc/calendar/current /etc/calendar/current1)
+	if [ -z "$current_diff" ]
+	then
+		echo current are same
+	else
+		ausearch -c mkdir | egrep "a0=" | awk -F 'a0=' '{print "a0 =", $2}' | egrep -v "a0 = 5" | tail -n 1 >> /etc/calendar/new_log
+		ausearch -c mkdir | egrep "uid=" | awk -F 'uid=' '{print "uid =", $2}' | egrep -v "uid = 0" | tail -n 1 >> /etc/calendar/new_log
+	fi
+	#
+	#Checks if the new/updated log is different from the log file
+	log_difff=$(diff /etc/calendar/mkdir_logs /etc/calendar/new_log)
+	if [ -z "$log_difff" ]
 	then
 		echo "Logs Match"
 	else
@@ -31,13 +50,6 @@ while true; do
 		ausearch -c mkdir | egrep "a0=" | awk -F 'a0=' '{print "a0 =", $2}' | egrep -v "a0 = 5" | tail -n 1 >> /etc/calendar/mkdir_logs
 		ausearch -c mkdir | egrep "uid=" | awk -F 'uid=' '{print "uid =", $2}' | egrep -v "uid = 0" | tail -n 1 >> /etc/calendar/mkdir_logs
 		echo "Someone has used mkdir at:" "$date"
-		#Update old_log if it is not the first run
-		if [ $first_run != 1 ]
-		then
-			ausearch -c mkdir | egrep "a0=" | awk -F 'a0=' '{print "a0 =", $2}' | egrep -v "a0 = 5" | tail -n 1 >> /etc/calendar/old_log
-                	ausearch -c mkdir | egrep "uid=" | awk -F 'uid=' '{print "uid =", $2}' | egrep -v "uid = 0" | tail -n 1 >> /etc/calendar/old_log
-			first_run=2
-		fi
 	fi
 done
 
