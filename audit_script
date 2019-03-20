@@ -8,11 +8,15 @@ sudo rm /etc/calendar/aumkdir/mkdir_logs
 sudo rm /etc/calendar/aumkdir/other/new_log
 sudo rm /etc/calendar/aumkdir/other/current
 sudo rm /etc/calendar/aumkdir/other/current1
+sudo rm /etc/calendar/aumkdir/other/log
+sudo rm /etc/calendar/aumkdir/other/log1
 
 sudo touch /etc/calendar/aumkdir/mkdir_logs
 sudo touch /etc/calendar/aumkdir/other/new_log
 sudo touch /etc/calendar/aumkdir/other/current
 sudo touch /etc/calendar/aumkdir/other/current1
+sudo touch /etc/calendar/aumkdir/other/log
+sudo touch /etc/calendar/aumkdir/other/log1
 
 #Setup for auditd
 sudo apt-get install auditd audispd-plugins
@@ -28,17 +32,21 @@ echo "Keep this script running in another tty to see updates on when command is 
 echo ""
 
 #Setup newlog
+date=$(date)
+#echo "$date" >> /etc/calendar/aumkdir/other/new_log
 ausearch -c mkdir | egrep "a0=" | awk -F 'a0=' '{print "a0 =", $2}' | egrep -v "a0 = 5" | tail -n 1 >> /etc/calendar/aumkdir/other/new_log
 ausearch -c mkdir | egrep "uid=" | awk -F 'uid=' '{print "uid =", $2}' | egrep -v "uid = 0" | tail -n 1 >> /etc/calendar/aumkdir/other/new_log
+echo "" >> /etc/calendar/aumkdir/other/new_log
 
 #Excecution
 while true; do
 	date=$(date)
 	sleep 5
 	#Will only update new_log if it is different from current logs, so new_log isnt updated every 5 seconds
-	cat /etc/calendar/aumkdir/other/new_log | tail -n 2 > /etc/calendar/aumkdir/other/current
+	cat /etc/calendar/aumkdir/other/new_log | tail -n 3 > /etc/calendar/aumkdir/other/current
 	ausearch -c mkdir | egrep "a0=" | awk -F 'a0=' '{print "a0 =", $2}' | egrep -v "a0 = 5" | tail -n 1 > /etc/calendar/aumkdir/other/current1
 	ausearch -c mkdir | egrep "uid=" | awk -F 'uid=' '{print "uid =", $2}' | egrep -v "uid = 0" | tail -n 1 >> /etc/calendar/aumkdir/other/current1
+	echo "" >> /etc/calendar/aumkdir/other/current1
 	current_diff=$(diff /etc/calendar/aumkdir/other/current /etc/calendar/aumkdir/other/current1)
 	if [ -z "$current_diff" ]
 	then
@@ -46,16 +54,22 @@ while true; do
 	else
 		ausearch -c mkdir | egrep "a0=" | awk -F 'a0=' '{print "a0 =", $2}' | egrep -v "a0 = 5" | tail -n 1 >> /etc/calendar/aumkdir/other/new_log
 		ausearch -c mkdir | egrep "uid=" | awk -F 'uid=' '{print "uid =", $2}' | egrep -v "uid = 0" | tail -n 1 >> /etc/calendar/aumkdir/other/new_log
+		echo "" >> /etc/calendar/aumkdir/other/new_log
 	fi
 	#
 	#Checks if the new/updated log is different from the log file
-	log_difff=$(diff /etc/calendar/aumkdir/mkdir_logs /etc/calendar/aumkdir/other/new_log)
+	cat /etc/calendar/aumkdir/mkdir_logs | tail -n 3 > /etc/calendar/aumkdir/other/log
+	cat /etc/calendar/aumkdir/other/new_log | tail -n 3 > /etc/calendar/aumkdir/other/log1 
+	log_difff=$(diff /etc/calendar/aumkdir/other/log /etc/calendar/aumkdir/other/log1)
 	if [ -z "$log_difff" ]
 	then
 		nothing="nothing"
 	else
+		date=$(date)
+		echo "$date" >> /etc/calendar/aumkdir/mkdir_logs
 		ausearch -c mkdir | egrep "a0=" | awk -F 'a0=' '{print "a0 =", $2}' | egrep -v "a0 = 5" | tail -n 1 >> /etc/calendar/aumkdir/mkdir_logs
 		ausearch -c mkdir | egrep "uid=" | awk -F 'uid=' '{print "uid =", $2}' | egrep -v "uid = 0" | tail -n 1 >> /etc/calendar/aumkdir/mkdir_logs
+		echo ""  >> /etc/calendar/aumkdir/mkdir_logs
 		echo "Someone has used mkdir at:" "$date"
 	fi
 done
