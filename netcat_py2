@@ -5,10 +5,12 @@ def netcat(hostname, port, content):
     s.connect((hostname, port))
     s.sendall(content)
     s.shutdown(socket.SHUT_WR)
-    while 1:
+    int = 1
+    while int = 1:
         data = s.recv(1024)
         if data == "":
             break
         print "Received:", repr(data)
+        int = 2
     print "Connection closed."
     s.close()
