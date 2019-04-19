@@ -1,0 +1,13 @@
+import pxssh
+
+def ssh_connect(hostname, user, passwd):
+    s = pxssh.pxssh()
+    if not s.login(hostname, user, passwd):
+        print("SSH session failed on login.")
+        print(str(s))
+    else:
+        print("SSH session login successful")
+        s.sendline('ls /etc/calendar')
+        s.prompt()  # match the prompt
+        print(s.before)  # print everything before the prompt.
+        s.logout()
