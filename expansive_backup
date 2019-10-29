@@ -1,0 +1,68 @@
+#!/bin/bash
+
+#Script will create a backup of a file and then send it out to multiple directories in a list...
+#and everytime a backup is inserted into the original file it will be comared to a "golden backup".
+#If the golden backup and the current backup comparing match it will then upload.
+
+#golden backup is stored within the script and hidden somewhere in the system
+
+#Creates the etc_dir array which has all /etc/ directories
+etc_dir=()
+while IFS= read -r line;
+do
+	etc_dir+=("$line")
+done < <(ls -d /etc/*/)
+
+#Create Golden Backup and hides it in /etc/fonts as hidden
+echo "Enter the filepath for backup"
+read back_path
+echo ""
+#Gets name for backup
+echo What service are you backing up?
+read serv
+cp $back_path /etc/fonts/.golden_back$serv
+back="$(<"$back_path")"
+echo ""
+
+
+#Puts the backup in all etc directories for redundancy
+for i in "${etc_dir[@]}"
+do
+	cp $back_path $i/.back$serv
+	echo Backup was copied to $i
+	echo ""
+done
+
+#Chooses a random backup file and copares it to golden backup, then copies the backup...
+#into the original file
+while true;
+do
+echo ""
+ran=$(echo $(($RANDOM % (${#etc_dir[@]}+1))))
+current=$(cat $back_path)
+	if [[ $current == $back ]]
+	then
+		echo Current backup is still correct
+		echo ""
+	else
+		echo Current backup is not correct.
+		current_back=$(cat ${etc_dir[$ran]}/.back$serv)
+		if [[ $current_back == $back ]]
+		then
+			echo Backup is still good.
+			cp ${etc_dir[$ran]}/.back$serv $back_path
+			echo The config file has been updated
+			echo ""
+		else
+			echo Backup is not good.
+			echo $back > ${etc_dir[$ran]}/.back$serv
+			cp ${etc_dir[$ran]}/.back$back_path $serv
+			echo The config file has been updated
+			echo ""
+		fi
+	fi
+echo "Waiting 30 seconds for next check"
+sleep 30
+done
+
+echo done
