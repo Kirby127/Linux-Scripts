@@ -1,0 +1,9 @@
+#Written in bash for linux
+
+#Will use the whoami command to find out what user logged in.
+user=$(whoami)
+
+#Use date command to find date and time.
+date=$(date)
+
+echo $user logged in at $date >> /path/to/log
