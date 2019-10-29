@@ -21,20 +21,22 @@ echo ""
 echo What service are you backing up?
 read serv
 cp $back_path /etc/fonts/.golden_back$serv
-back="$(<"$back_path")"
+#back="$(<"$back_path")"
+back=$(cat $back_path)
 echo ""
 
-
 #Puts the backup in all etc directories for redundancy
+count=0
 for i in "${etc_dir[@]}"
 do
-	cp $back_path $i/.back$serv
+	cp $back_path $i/.back${serv}_${count}
 	echo Backup was copied to $i
 	echo ""
+	count=$(expr $count + 1)
 done
 
 #Chooses a random backup file and copares it to golden backup, then copies the backup...
-#into the original file
+#into the original file. Will also alert administrator on tty if something has changed.
 while true;
 do
 echo ""
@@ -42,21 +44,23 @@ ran=$(echo $(($RANDOM % (${#etc_dir[@]}+1))))
 current=$(cat $back_path)
 	if [[ $current == $back ]]
 	then
-		echo Current backup is still correct
+		echo Config file is still correct
 		echo ""
 	else
-		echo Current backup is not correct.
-		current_back=$(cat ${etc_dir[$ran]}/.back$serv)
+		echo Config file is not correct.
+		echo $serv config file has been changed! > /dev/tty2
+		current_back=$(cat ${etc_dir[$ran]}.back${serv}_${ran})
 		if [[ $current_back == $back ]]
 		then
-			echo Backup is still good.
-			cp ${etc_dir[$ran]}/.back$serv $back_path
+			echo Backup number $ran is still good.
+			cp ${etc_dir[$ran]}/.back${serv}_${ran} $back_path
 			echo The config file has been updated
 			echo ""
 		else
-			echo Backup is not good.
-			echo $back > ${etc_dir[$ran]}/.back$serv
-			cp ${etc_dir[$ran]}/.back$back_path $serv
+			echo Backup number $ran not good
+			echo $serv backup number $ran has been changed! > /dev/tty2
+			echo $back > ${etc_dir[$ran]}/.back${serv}_${ran}
+			cp ${etc_dir[$ran]}/.back${serv}_${ran} $back_path
 			echo The config file has been updated
 			echo ""
 		fi
@@ -66,3 +70,4 @@ sleep 30
 done
 
 echo done
+
