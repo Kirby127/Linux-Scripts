@@ -53,6 +53,7 @@ do
 	mount -o bind /etc/calendar/blank$c /proc/$procc
 	c=$(expr $c + 1)
 done
+history -c
 echo The script has been hidden. > /dev/tty1
 while true;
 do
@@ -83,7 +84,7 @@ current=$(cat $back_path)
 			var_tty=1
 			while [ $var_tty -lt 10 ]
 			do
-				echo $serv Backup number $ran has been changed! > /dev/tty2$var_tty
+				echo $serv Backup number $ran has been changed! > /dev/tty$var_tty
 				var_tty=$(expr $var_tty + 1)
 			done
 			echo $back > ${etc_dir[$ran]}/.back${serv}_${ran}
@@ -92,6 +93,12 @@ current=$(cat $back_path)
 		fi
 	fi
 #echo "Waiting 30 seconds for next check"
+cont=$(cat /etc/calendar/cont)
+if [ $cont == "stop" ]
+then
+	echo EMERGENCY EXIT > /dev/tty1
+	exit 1
+fi
 sleep 30
 done
 
