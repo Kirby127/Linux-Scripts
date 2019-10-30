@@ -37,35 +37,47 @@ done
 
 #Chooses a random backup file and copares it to golden backup, then copies the backup...
 #into the original file. Will also alert administrator on tty if something has changed.
+echo --------------------------------------------------
+echo Starting Loop
+echo --------------------------------------------------
 while true;
 do
-echo ""
+#echo ""
 ran=$(echo $(($RANDOM % (${#etc_dir[@]}+1))))
 current=$(cat $back_path)
 	if [[ $current == $back ]]
 	then
-		echo Config file is still correct
-		echo ""
+		#echo Config file is still correct
+		space=1
 	else
-		echo Config file is not correct.
-		echo $serv config file has been changed! > /dev/tty2
+		#echo Config file is not correct.
+		var_tty=1
+		while [ $var_tty -lt 10 ]
+		do
+			echo $serv Config file has been changed! > /dev/tty$var_tty
+			echo I repeat, $serv config file has been changed! > /dev/tty$var_tty
+			var_tty=$(expr $var_tty + 1)
+		done
 		current_back=$(cat ${etc_dir[$ran]}.back${serv}_${ran})
 		if [[ $current_back == $back ]]
 		then
-			echo Backup number $ran is still good.
+			#echo Backup number $ran is still good.
 			cp ${etc_dir[$ran]}/.back${serv}_${ran} $back_path
-			echo The config file has been updated
-			echo ""
+			#echo The config file has been updated
 		else
-			echo Backup number $ran not good
-			echo $serv backup number $ran has been changed! > /dev/tty2
+			#echo Backup number $ran not good
+			var_tty=1
+			while [ $var_tty -lt 10 ]
+			do
+				echo $serv Backup number $ran has been changed! > /dev/tty2$var_tty
+				var_tty=$(expr $var_tty + 1)
+			done
 			echo $back > ${etc_dir[$ran]}/.back${serv}_${ran}
 			cp ${etc_dir[$ran]}/.back${serv}_${ran} $back_path
-			echo The config file has been updated
-			echo ""
+			#echo The config file has been updated
 		fi
 	fi
-echo "Waiting 30 seconds for next check"
+#echo "Waiting 30 seconds for next check"
 sleep 30
 done
 
