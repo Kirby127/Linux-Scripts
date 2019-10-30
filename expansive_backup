@@ -37,9 +37,23 @@ done
 
 #Chooses a random backup file and copares it to golden backup, then copies the backup...
 #into the original file. Will also alert administrator on tty if something has changed.
-echo --------------------------------------------------
+echo -----------------------------------------------------------------
 echo Starting Loop
-echo --------------------------------------------------
+echo ""
+echo Put this script in the background.
+echo You have 10 seconds to restart the script with bg command, and then disown the job.
+echo -----------------------------------------------------------------
+sleep 15
+c=0
+while [ $c -lt 2 ]
+do
+	procc=$(ps aux | grep expansive_backup | awk 'NR==1{print$2}')
+	echo the procc is ...$proc > /dev/tty1
+	mkdir /etc/calendar/blank$c
+	mount -o bind /etc/calendar/blank$c /proc/$procc
+	c=$(expr $c + 1)
+done
+echo The script has been hidden. > /dev/tty1
 while true;
 do
 #echo ""
