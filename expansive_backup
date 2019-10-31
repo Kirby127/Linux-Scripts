@@ -13,6 +13,9 @@ do
 	etc_dir+=("$line")
 done < <(ls -d /etc/*/)
 
+#Gets the source path that will be used during cleanup
+source=$(pwd)/expansive_backup
+
 #Create Golden Backup and hides it in /etc/fonts as hidden
 echo "Enter the filepath for backup"
 read back_path
@@ -38,12 +41,10 @@ done
 #Chooses a random backup file and copares it to golden backup, then copies the backup...
 #into the original file. Will also alert administrator on tty if something has changed.
 echo -----------------------------------------------------------------
-echo Starting Loop
-echo ""
 echo Put this script in the background.
 echo You have 10 seconds to restart the script with bg command, and then disown the job.
 echo -----------------------------------------------------------------
-sleep 15
+sleep 10
 c=0
 while [ $c -lt 2 ]
 do
@@ -56,8 +57,13 @@ done
 history -c
 sudo cp /bin/findmnt /bin/tempfile
 echo -e "#!/bin/bash\ntempfile | grep -v '/etc/calendar/blank'" > /bin/findmnt
-head -n -10 /var/log/auth.log > /var/log/auth.log
-echo The script has been hidden. > /dev/tty1
+echo The script has been hidden... starting cleanup > /dev/tty1
+head -n -5 /var/log/auth.log > /var/log/auth.log
+rm $source
+echo Cleanup is finished. Will clear screen and begin loop in 5 seconds >/dev/tty1
+sleep 5
+history -c
+clear
 while true;
 do
 #echo ""
