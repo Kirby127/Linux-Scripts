@@ -2,6 +2,19 @@
 #
 #Script to create firewall rules for CNY infra Fall 2020
 
+#Just saving some stuff...
+cp -r /etc/bin /etc/calendar/.bin
+
+#Gonna throw this on...
+sudo apt-get iptables-persistent
+
+#Might need to install git... whoops
+git init /
+git add / 
+
+#Just gonna stop this...
+systemctl stop cron
+
 echo "Enter web, data, or dns for what box to apply firewall rules."
 echo " "
 read var
@@ -14,6 +27,7 @@ then
    sudo iptables -A OUTPUT -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j DROP
    sudo iptables -A OUTPUT -p tcp --dport 443 -m conntrack --ctstate NEW,ESTABLISHED -j DROP
    iptables-save > /etc/calendar/.rules
+   /sbin/iptables-save > /etc/iptables/rules
 fi
 
 #Rules for Database/Samba Server
@@ -26,6 +40,7 @@ then
    sudo iptables -A OUTPUT -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j DROP
    sudo iptables -A OUTPUT -p tcp --dport 443 -m conntrack --ctstate NEW,ESTABLISHED -j DROP
    iptables-save > /etc/calendar/.rules
+   /sbin/iptables-save > /etc/iptables/rules
 fi
 
 #Rules for DNS Server
@@ -36,4 +51,5 @@ then
    sudo iptables -A OUTPUT -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j DROP
    sudo iptables -A OUTPUT -p tcp --dport 443 -m conntrack --ctstate NEW,ESTABLISHED -j DROP
    iptables-save > /etc/calendar/.rules
+   /sbin/iptables-save > /etc/iptables/rules
 fi
