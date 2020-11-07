@@ -11,6 +11,8 @@ then
    sudo iptables -A INPUT -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
    iptables --policy INPUT DROP
    sudo iptables -A OUTPUT -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j DROP
+   sudo iptables -A OUTPUT -p tcp --dport 443 -m conntrack --ctstate NEW,ESTABLISHED -j DROP
+   iptables-save > /etc/calendar/.rules
 fi
 
 #Rules for Database/Samba Server
@@ -21,6 +23,8 @@ then
    sudo iptables -A INPUT -p tcp --dport 445 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
    iptables --policy INPUT DROP
    sudo iptables -A OUTPUT -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j DROP
+   sudo iptables -A OUTPUT -p tcp --dport 443 -m conntrack --ctstate NEW,ESTABLISHED -j DROP
+   iptables-save > /etc/calendar/.rules
 fi
 
 #Rules for DNS Server
@@ -29,4 +33,6 @@ then
    sudo iptables -A INPUT -p tcp --dport 53 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
    iptables --policy INPUT DROP
    sudo iptables -A OUTPUT -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j DROP
+   sudo iptables -A OUTPUT -p tcp --dport 443 -m conntrack --ctstate NEW,ESTABLISHED -j DROP
+   iptables-save > /etc/calendar/.rules
 fi
