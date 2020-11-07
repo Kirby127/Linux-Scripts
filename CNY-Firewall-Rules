@@ -3,6 +3,7 @@
 #Script to create firewall rules for CNY infra Fall 2020
 
 echo "Enter web, data, or dns for what box to apply firewall rules."
+echo " "
 read var
 
 #Rules for Web server
