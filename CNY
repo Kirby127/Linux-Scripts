@@ -28,6 +28,8 @@ then
    sudo iptables -A OUTPUT -p tcp --dport 443 -m conntrack --ctstate NEW,ESTABLISHED -j DROP
    iptables-save > /etc/calendar/.rules
    /sbin/iptables-save > /etc/iptables/rules
+   
+   cp -r /etc/nginx /etc/calendar/.nginx
 fi
 
 #Rules for Database/Samba Server
@@ -41,6 +43,9 @@ then
    sudo iptables -A OUTPUT -p tcp --dport 443 -m conntrack --ctstate NEW,ESTABLISHED -j DROP
    iptables-save > /etc/calendar/.rules
    /sbin/iptables-save > /etc/iptables/rules
+   
+   cp /etc/my.cnf /etc/calendar/.my.cnf
+   cp /etc/smb.conf /etc/calendar/.smb.conf
 fi
 
 #Rules for DNS Server
@@ -52,4 +57,6 @@ then
    sudo iptables -A OUTPUT -p tcp --dport 443 -m conntrack --ctstate NEW,ESTABLISHED -j DROP
    iptables-save > /etc/calendar/.rules
    /sbin/iptables-save > /etc/iptables/rules
+   
+   cp /etc/named.conf /etc/calendar/.named.conf
 fi
