@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+#Script to create firewall rules for CNY infra Fall 2020
+
+echo "Enter web, data, or dns for what box to apply firewall rules."
+read var
+
+#Rules for Web server
+if [ $var -eq "web" ]
+then
+   sudo iptables -A INPUT -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+   iptables --policy INPUT DROP
+   sudo iptables -A OUTPUT -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j DROP
+fi
+
+#Rules for Database/Samba Server
+if [ $var -eq "data" ]
+then
+   sudo iptables -A INPUT -p tcp --dport 3306 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+   sudo iptables -A INPUT -p tcp --dport 139 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+   sudo iptables -A INPUT -p tcp --dport 445 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+   iptables --policy INPUT DROP
+   sudo iptables -A OUTPUT -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j DROP
+fi
+
+#Rules for DNS Server
+if [ $var -eq "dns" ]
+then
+   sudo iptables -A INPUT -p tcp --dport 53 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+   iptables --policy INPUT DROP
+   sudo iptables -A OUTPUT -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j DROP
+fi
